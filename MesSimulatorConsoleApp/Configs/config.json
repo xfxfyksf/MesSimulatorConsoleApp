@@ -1,0 +1,67 @@
+[
+  {
+    "ConnectionType": "RabbitMQ",
+    "ConnectionName": "RabbitMQ-01",
+    "Connection": {
+      "RabbitMQConnectionInfo": {
+        "HostName": "localhost",
+        "Port": 5672,
+        "UserName": "admin",
+        "Password": "123456",
+        "VirtualHost": "/"
+      },
+      "RabbitMQConfig": {
+        "Producer": {
+          "RoutingKey": "receive.routing.key",
+          "Exchange": {
+            "ExchangeName": "receive.exchange",
+            "Type": "topic",
+            "Durable": true,
+            "AutoDelete": false,
+            "Arguments": {
+
+            }
+          },
+          "Queue": {
+            "QueueName": "receive.queue",
+            "Durable": true,
+            "Exclusive": false,
+            "AutoDelete": false,
+            "Arguments": {
+              "x-dead-letter-exchange": "receive.dl.exchange",
+              "x-dead-letter-routing-key": "receive.dl.routing.key",
+              "x-max-priority": 10,
+              "x-message-ttl": 100000,
+              "x-queue-mode": "lazy"
+            }
+          }
+        },
+        "Consumer": {
+          "RoutingKey": "send.routing.key",
+          "Exchange": {
+            "ExchangeName": "send.exchange",
+            "Type": "topic",
+            "Durable": true,
+            "AutoDelete": false,
+            "Arguments": {
+
+            }
+          },
+          "Queue": {
+            "QueueName": "send.queue",
+            "Durable": true,
+            "Exclusive": false,
+            "AutoDelete": false,
+            "Arguments": {
+              "x-dead-letter-exchange": "send.dl.exchange",
+              "x-dead-letter-routing-key": "send.dl.routing.key",
+              "x-max-priority": 10,
+              "x-message-ttl": 100000,
+              "x-queue-mode": "lazy"
+            }
+          }
+        }
+      }
+    }
+  }
+]

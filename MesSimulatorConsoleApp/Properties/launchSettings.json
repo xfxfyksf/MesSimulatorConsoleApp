@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MesSimulatorConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "config"
+    }
+  }
+}
