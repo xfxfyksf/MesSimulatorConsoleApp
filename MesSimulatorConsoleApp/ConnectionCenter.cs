@@ -23,7 +23,12 @@ namespace MesSimulatorConsoleApp
             get; set;
         }
 
-        private IMessageHandler MessageHandler
+        private MessageHandler? MessageHandler
+        {
+            get; set;
+        }
+
+        private ConnectionInfo? ConnectionInfo
         {
             get; set;
         }
@@ -64,37 +69,8 @@ namespace MesSimulatorConsoleApp
                 {
                     try
                     {
-                        Connection?.Disconnect();
-                        var connection = MessageSimulator.Core.Models.ConnectionFactory.CreateConnection(connectionInfo);
-                        Connection = connection;
-
-                        // 启动连接
-                        Connection?.Connect();
-                        if (Connection != null && Connection is RabbitMQConnection)
-                        {
-                            if (Connection is RabbitMQConnection rabbitMQConnection)
-                            {
-                                if (rabbitMQConnection.Connection != null)
-                                {
-                                    // 连接断开事件处理
-                                    rabbitMQConnection.Connection.ConnectionShutdown += OnDisConnect;
-                                }
-                                
-                                if (rabbitMQConnection.Consumer != null)
-                                {
-                                    // 收到消息事件处理
-                                    rabbitMQConnection.Consumer.Received += OnReceived;
-                                }
-                                
-                                rabbitMQConnection.Receive();
-                            }
-                        }
-
-                        // 设置 Handler
-                        MessageHandler = new MessageHandler();
-                        MessageHandler.MessageSender += SendMessage;
-
-                        ConsoleLog($"CONNECTED");
+                        ConnectionInfo = connectionInfo;
+                        Connect(connectionInfo);
                         // 暂时仅支持一个连接
                         break;
                     }
@@ -106,6 +82,43 @@ namespace MesSimulatorConsoleApp
             }
         }
 
+        private void Connect(ConnectionInfo? connectionInfo)
+        {
+            Connection?.Disconnect();
+
+            ArgumentNullException.ThrowIfNull(connectionInfo);
+            var connection = MessageSimulator.Core.Models.ConnectionFactory.CreateConnection(connectionInfo);
+            Connection = connection;
+
+            // 启动连接
+            Connection?.Connect();
+            if (Connection != null && Connection is RabbitMQConnection)
+            {
+                if (Connection is RabbitMQConnection rabbitMQConnection)
+                {
+                    if (rabbitMQConnection.Connection != null)
+                    {
+                        // 连接断开事件处理
+                        rabbitMQConnection.Connection.ConnectionShutdown += OnDisConnect;
+                    }
+
+                    if (rabbitMQConnection.Consumer != null)
+                    {
+                        // 收到消息事件处理
+                        rabbitMQConnection.Consumer.Received += OnReceived;
+                    }
+
+                    rabbitMQConnection.Receive();
+                }
+            }
+
+            // 设置 Handler
+            MessageHandler = new MessageHandler();
+            MessageHandler.MessageSender += SendMessage;
+
+            ConsoleLog($"CONNECTED");
+        }
+
         private bool IsConnected()
         {
             return Connection != null && Connection.IsConnected();
@@ -115,24 +128,42 @@ namespace MesSimulatorConsoleApp
         {
             ConsoleLog($"CONNECTION ABORTED: {e.ReplyCode}{Environment.NewLine}{e.Exception}");
             ConsoleLog("DISCONNECTED");
+
+            Reconnect();
+        }
+
+        private void Reconnect()
+        {
+            while (!IsConnected())
+            {
+                ConsoleLog("ATTEMPTING TO RECONNECT...");
+                try
+                {
+                    Connect(ConnectionInfo);
+                    Task.Delay(5000).Wait(); // Delay before retrying
+                }
+                catch (Exception ex)
+                {
+                    ConsoleLog($"RECONNECT FAILED: {ex.Message}");
+                    Task.Delay(5000).Wait(); // Delay before retrying
+                }
+            }
         }
 
         private void OnReceived(object? sender, BasicDeliverEventArgs e)
         {
-            Task.Run(() =>
+            var body = e.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            MessageReceivedConsoleLog(message);
+
+            try
             {
-                var body = e.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                MessageReceivedConsoleLog(message);
-                try
-                {
-                    MessageHandler?.Handel(message);
-                }
-                catch (Exception ex)
-                {
-                    ConsoleLog($"HANDLE MESSAGE ERROR: {ex.Message}{Environment.NewLine}{ex.StackTrace}");
-                }
-            });
+                MessageHandler?.Handel(message);
+            }
+            catch (Exception ex)
+            {
+                ConsoleLog($"HANDLE MESSAGE ERROR: {ex.Message}{Environment.NewLine}{ex.StackTrace}");
+            }
         }
 
         private void SendMessage(string message)
@@ -155,15 +186,15 @@ namespace MesSimulatorConsoleApp
         {
             Console.WriteLine(LogHeader() + log);
         }
-        private void ConsoleLog(string description, string messasge)
+        private static void ConsoleLog(string description, string messasge)
         {
             ConsoleLog(description + Environment.NewLine + messasge + Environment.NewLine);
         }
-        private void MessageReceivedConsoleLog(string message)
+        private static void MessageReceivedConsoleLog(string message)
         {
             ConsoleLog("###### RECEIVED MESSAGE ###### ", message);
         }
-        private void MessageSentConsoleLog(string message)
+        private static void MessageSentConsoleLog(string message)
         {
             ConsoleLog("###### SENT MESSAGE ###### ", message);
         }
