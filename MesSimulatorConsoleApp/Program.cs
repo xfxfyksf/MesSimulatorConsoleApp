@@ -1,8 +1,4 @@
-﻿using MessageSimulator.Core.Models;
-using MessageSimulator.Core.Models.Config;
-using Newtonsoft.Json;
-
-namespace MesSimulatorConsoleApp
+﻿namespace MesSimulatorConsoleApp
 {
     internal class Program
     {
