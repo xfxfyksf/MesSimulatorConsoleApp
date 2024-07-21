@@ -150,13 +150,14 @@ namespace MesSimulatorConsoleApp.Handler
             namespaces.Add(string.Empty, string.Empty);
 
             // 序列化为 UTF-8 编码的 XML 字符串
-            using StringWriter stringWriter = new();
-            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, settings))
+            using MemoryStream memoryStream = new();
+            using (XmlWriter xmlWriter = XmlWriter.Create(memoryStream, settings))
             {
                 XmlSerializer serializer = new(typeof(Message<T>));
                 serializer.Serialize(xmlWriter, message, namespaces);
+                xmlWriter.Flush();
             }
-            string xmlString = stringWriter.ToString();
+            string xmlString = Encoding.UTF8.GetString(memoryStream.ToArray());
 
             MessageSender?.Invoke(xmlString);
         }
