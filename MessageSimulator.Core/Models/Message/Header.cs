@@ -12,6 +12,12 @@ public class Header
     public string? TARGETSUBJECTNAME { get; set; }
     public string? EVENTUSER { get; set; }
     public string? EVENTCOMMENT { get; set; }
+    public string? TOPIC { get; set; }
+    public string? REPLYTO { get; set; }
+    public string? MESSAGETYPE { get; set; }
+    public string? ROUTINGKEY { get; set; }
+    public string? SENDEXCHANGE { get; set; }
+    public string? SNEDER { get; set; }
 
     public Header() { }
     public Header(string messageName)
