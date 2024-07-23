@@ -3,7 +3,7 @@
 namespace MesSimulatorConsoleApp.MessageBody
 {
     [Serializable]
-    public class EapMesCarrierInfoRequest : Body
+    public class EapMesCarrierInfoRequestBody : Body
     {
         public new const string MESSAGENAME = "EAPMES_CARRIER_INFO_REQUEST";
         public string? FACTORYNAME { get; set; }
