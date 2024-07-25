@@ -1,6 +1,6 @@
 ﻿namespace MesSimulatorConsoleApp.Handler
 {
-    public delegate void MessageSenderDelegate(string message);
+    public delegate void MessageSenderDelegate(string message, string machineName);
 
     public interface IMessageHandler
     {

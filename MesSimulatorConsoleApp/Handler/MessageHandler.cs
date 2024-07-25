@@ -243,7 +243,7 @@ namespace MesSimulatorConsoleApp.Handler
             }
             string xmlString = Encoding.UTF8.GetString(memoryStream.ToArray());
 
-            MessageSender?.Invoke(xmlString);
+            MessageSender?.Invoke(xmlString, message.Body.MACHINENAME);
         }
     }
 }

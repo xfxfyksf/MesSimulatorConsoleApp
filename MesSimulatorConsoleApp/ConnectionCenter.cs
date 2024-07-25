@@ -161,13 +161,13 @@ namespace MesSimulatorConsoleApp
             }
         }
 
-        private void SendMessage(string message)
+        private void SendMessage(string message, string machineName)
         {
             try
             {
                 if (IsConnected())
                 {
-                    Connection?.Send(message);
+                    Connection?.Send(message, machineName);
                     MessageSentConsoleLog(message);
                 }
             }

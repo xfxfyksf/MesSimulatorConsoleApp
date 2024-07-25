@@ -75,26 +75,26 @@ public class RabbitMQConnection(ConnectionInfo connectionInfo) : Models.IConnect
             ProducerChannel = Connection.CreateModel();
 
             // 创建 producer
-            ProducerChannel.ExchangeDeclare(
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Type,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Durable,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.AutoDelete,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Arguments
-                );
-            ProducerChannel.QueueDeclare(
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Durable,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Exclusive,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.AutoDelete,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Arguments
-                );
-            ProducerChannel.QueueBind(
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName,
-                ConnectionInfo.Connection.RabbitMQConfig.Producer.RoutingKey,
-                null
-                );
+            //ProducerChannel.ExchangeDeclare(
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Type,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Durable,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.AutoDelete,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Arguments
+            //    );
+            //ProducerChannel.QueueDeclare(
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Durable,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Exclusive,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.AutoDelete,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Arguments
+            //    );
+            //ProducerChannel.QueueBind(
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName,
+            //    ConnectionInfo.Connection.RabbitMQConfig.Producer.RoutingKey,
+            //    null
+            //    );
         }
         catch (Exception)
         {
@@ -125,13 +125,34 @@ public class RabbitMQConnection(ConnectionInfo connectionInfo) : Models.IConnect
             Consumer
             );
     }
-    public void Send(string message)
+    public void Send(string message, string machineName)
     {
+        ProducerChannel?.ExchangeDeclare(
+                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName.Replace("${MachineName}", machineName),
+                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Type,
+                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Durable,
+                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.AutoDelete,
+                ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.Arguments
+                );
+        ProducerChannel?.QueueDeclare(
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName.Replace("${MachineName}", machineName),
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Durable,
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Exclusive,
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.AutoDelete,
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.Arguments
+            );
+        ProducerChannel?.QueueBind(
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Queue.QueueName.Replace("${MachineName}", machineName),
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName.Replace("${MachineName}", machineName),
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.RoutingKey.Replace("${MachineName}", machineName),
+            null
+            );
+
         // 发布消息
         var messageBytes = Encoding.UTF8.GetBytes(message);
         ProducerChannel?.BasicPublish(
-            ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName,
-            ConnectionInfo.Connection.RabbitMQConfig.Producer.RoutingKey,
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.Exchange.ExchangeName.Replace("${MachineName}", machineName),
+            ConnectionInfo.Connection.RabbitMQConfig.Producer.RoutingKey.Replace("${MachineName}", machineName),
             null,
             messageBytes
             );

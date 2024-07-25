@@ -11,5 +11,5 @@ public interface IConnection
     void Disconnect();
     bool IsConnected();
     void Receive();
-    void Send(string message);
+    void Send(string message, string machineName);
 }

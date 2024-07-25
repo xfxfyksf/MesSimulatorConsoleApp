@@ -11,10 +11,10 @@
         "VirtualHost": "/"
       },
       "RabbitMQConfig": {
-        "Producer": {
-          "RoutingKey": "receive.routing.key",
+        "Consumer": {
+          "RoutingKey": "RoutingKey",
           "Exchange": {
-            "ExchangeName": "receive.exchange",
+            "ExchangeName": "FAB01.EAP.MES",
             "Type": "topic",
             "Durable": true,
             "AutoDelete": false,
@@ -23,23 +23,21 @@
             }
           },
           "Queue": {
-            "QueueName": "receive.queue",
+            "QueueName": "FAB01.EAP.MES",
             "Durable": true,
             "Exclusive": false,
             "AutoDelete": false,
             "Arguments": {
-              "x-dead-letter-exchange": "receive.dl.exchange",
-              "x-dead-letter-routing-key": "receive.dl.routing.key",
               "x-max-priority": 10,
               "x-message-ttl": 100000,
               "x-queue-mode": "lazy"
             }
           }
         },
-        "Consumer": {
-          "RoutingKey": "send.routing.key",
+        "Producer": {
+          "RoutingKey": "${MachineName}",
           "Exchange": {
-            "ExchangeName": "send.exchange",
+            "ExchangeName": "FAB01.MES.EAP",
             "Type": "topic",
             "Durable": true,
             "AutoDelete": false,
@@ -48,13 +46,11 @@
             }
           },
           "Queue": {
-            "QueueName": "send.queue",
+            "QueueName": "FAB01.MES.EAP.${MachineName}",
             "Durable": true,
             "Exclusive": false,
             "AutoDelete": false,
             "Arguments": {
-              "x-dead-letter-exchange": "send.dl.exchange",
-              "x-dead-letter-routing-key": "send.dl.routing.key",
               "x-max-priority": 10,
               "x-message-ttl": 100000,
               "x-queue-mode": "lazy"
